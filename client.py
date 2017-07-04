@@ -27,8 +27,12 @@ def unlabeledMarkerFrame(u_unlabeled):
 #        countFrame = 120
 
     pos_roate = compute_Pos_Angle(u_unlabeled) 
-    print(pos_roate, end = '\r')       
-#    sendSocket(pos_roate)
+    print(pos_roate,'\n')
+    if pos_roate is not -1:      
+        sendSocket(pos_roate)
+#        pass
+    else:
+        print("There's no pair\n")
 
         
 def NNeighbor(mat):
@@ -37,6 +41,7 @@ def NNeighbor(mat):
     distMatrix = csr_matrix(distMatrix)
     # the max distance between a pair of points 
     maxDistance = float(configParser.get('positionConfig', 'maxDistance'))
+#    maxDistance = 0.05
     for i in range(distMatrix.shape[0]):
         row = distMatrix.getrow(i).toarray()[0].ravel()
         top_indices = row.argsort()[1]
@@ -58,54 +63,59 @@ def compute_Pos_Angle(posData):
     n_unlabled_markers = np.array(unlabeled_markers)
 
     trace("raw markers:")
-    trace(n_unlabled_markers[:,0:3])
+#    trace(n_unlabled_markers[:,0:3])
+    if len(n_unlabled_markers) < 2:
+        return -1
+    else:
+        markers_index = NNeighbor(n_unlabled_markers[:,0:2])
+        trace("neighbor markers index:")
+        trace(markers_index)
 
-    markers_index = NNeighbor(n_unlabled_markers[:,0:2])
-    trace("neighbor markers index:")
-    trace(markers_index)
+        # marker_set contains all the pairs of ID collected. 
+        markers_set = [] 
 
-    # marker_set contains all the pairs of ID collected. 
-    markers_set = [] 
+        for i in range(len(markers_index)):
+            if(markers_index[i] > i):
+                markers_set.append([i, markers_index[i]])
 
-    for i in range(len(markers_index)):
-        if(markers_index[i] > i):
-            markers_set.append([i, markers_index[i]])
+        n_markers_set = np.array(markers_set)
+        trace("markers set:")
+        trace(markers_set)
 
-    n_markers_set = np.array(markers_set)
-    trace("markers set:")
-    trace(markers_set)
+        front_markers_set = list()
+        back_markers_set = list()
+        for i, j in markers_set:
+            if n_unlabled_markers[i][2] > n_unlabled_markers[j][2]:
+                front_markers_set.append(i)
+                back_markers_set.append(j)
+            else:
+                front_markers_set.append(j)
+                back_markers_set.append(i)
+        # print(front_markers)
 
-    front_markers_set = list()
-    back_markers_set = list()
-    for i, j in markers_set:
-        if n_unlabled_markers[i][2] > n_unlabled_markers[j][2]:
-            front_markers_set.append(i)
-            back_markers_set.append(j)
-        else:
-            front_markers_set.append(j)
-            back_markers_set.append(i)
-    # print(front_markers)
+        back_markers = (n_unlabled_markers[back_markers_set])[:,0:2]
+        front_markers = (n_unlabled_markers[front_markers_set])[:,0:2]
+        trace("back markers:")
+        trace(back_markers)
+        trace("font markers:")
+        trace(front_markers)
 
-    back_markers = (n_unlabled_markers[back_markers_set])[:,0:2]
-    front_markers = (n_unlabled_markers[front_markers_set])[:,0:2]
-    trace("back markers:")
-    trace(back_markers)
-    trace("font markers:")
-    trace(front_markers)
+        robot_location = (back_markers+front_markers)/2
+        trace("robot location:")
+        trace(robot_location)
 
-    robot_location = (back_markers+front_markers)/2
-    trace("robot location:")
-    trace(robot_location)
+        delta_points = front_markers - back_markers
+        robot_theta = (np.arctan2(delta_points[:,1], delta_points[:,0])+np.pi*2) % (np.pi*2)
+        trace("robot theta:")
+        trace(robot_theta)
 
-    delta_points = front_markers - back_markers
-    robot_theta = (np.arctan2(delta_points[:,1], delta_points[:,0])+np.pi*2) % (np.pi*2)
-    trace("robot theta:")
-    trace(robot_theta)
-
-    trace("robot_data:")
-    robot_data = np.hstack((robot_location, robot_theta.reshape(robot_theta.shape[0],1)))
-    trace(robot_data)
-    return robot_data
+        trace("robot_data:")
+        robot_data = np.hstack((robot_location, robot_theta.reshape(robot_theta.shape[0],1)))
+        trace(robot_data)
+        if len(robot_data) == 0:
+            return -1 
+        else:                    
+            return robot_data
 
 def sendSocket(pos_angle):
     s = socket.socket()         # Create a socket object
@@ -128,11 +138,12 @@ def sendSocket(pos_angle):
             header = bytes([0x4a, 0x44, 0x43, 0x43, 0x09]) + lenth
             s.sendall(header)
             s.sendall(newString)  
-            print(newString)                             
+#            print(newString)                             
         except:
             print("send failed")
             
     except:
+#        print("Disconnected!\n")
         pass
     
 # This will create a new NatNet client
