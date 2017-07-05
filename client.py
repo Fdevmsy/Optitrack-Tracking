@@ -7,10 +7,13 @@ from sklearn.metrics.pairwise import euclidean_distances
 from scipy.sparse import csr_matrix
 from struct import *
 import socket  
+import time
+starttime=time.time()
 
 configParser = configparser.ConfigParser(allow_no_value=True)
 configParser.read('config.ini')
-countFrame = 120
+numFrame = 0
+
 
 # This is a callback function that gets connected to the NatNet client and called once per mocap frame.
 def receiveNewFrame( inMarkerModelName, inMarkerset, markerCount, frameNumber, markerSetCount, unlabeledMarkersCount, rigidBodyCount, skeletonCount,
@@ -25,16 +28,25 @@ def unlabeledMarkerFrame(u_unlabeled):
 #
 #    if countFrame == 0:
 #        countFrame = 120
-
-    pos_roate = compute_Pos_Angle(u_unlabeled) 
-    print(pos_roate,'\n')
-    if pos_roate is not -1:      
-        sendSocket(pos_roate)
-#        pass
-    else:
-        print("There's no pair\n")
-
+    
+    countFrame()
+    pos_roate = compute_Pos_Angle(u_unlabeled)
+    print(pos_roate) 
         
+#    if pos_roate is not -1:      
+#        sendSocket(pos_roate)
+##        pass
+#    else:
+#        print("There's no pair\n")
+
+def countFrame():
+    global numFrame 
+    numFrame = numFrame + 1
+    if int(5.0 - ((time.time() - starttime) % 5.0)) == 0:
+        if numFrame!=1:
+            print(numFrame/5) 
+        numFrame = 0;
+    
 def NNeighbor(mat):
     idx = list()
     distMatrix = euclidean_distances(mat)
