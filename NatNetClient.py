@@ -23,7 +23,7 @@ class NatNetClient:
 
         # This should match the multicast address listed in Motive's streaming settings.
         self.multicastAddress = configParser.get('natnetConfig', 'multicastIP')
-        print(self.multicastAddress)
+#        print(self.multicastAddress)
 
         # NatNet Command channel
         self.commandPort = int(configParser.get('natnetConfig', 'cmdPort'))
@@ -203,8 +203,8 @@ class NatNetClient:
             # change to x, z, y 
             u_unlabeled.append([pos[2], pos[0], pos[1]])
             trace( "\tUnlabled Marker", i, ":", u_unlabeled[i][0],",", u_unlabeled[i][1],",", u_unlabeled[i][2] )
-
-        self.unlabeledMarkerListener(u_unlabeled)
+        if self.unlabeledMarkerListener is not None:
+          self.unlabeledMarkerListener(u_unlabeled)
 
         # Rigid body count (4 bytes)
         rigidBodyCount = int.from_bytes( data[offset:offset+4], byteorder='little' )
@@ -459,7 +459,7 @@ class NatNetClient:
         # Create a separate thread for receiving command packets
         commandThread = Thread( target = self.__dataThreadFunction, args = (self.commandSocket, ))
         commandThread.start()
-        print('start success')
+#        print('start success')
 
         self.sendCommand( self.NAT_REQUEST_MODELDEF, "", self.commandSocket, (self.serverIPAddress, self.commandPort) )
-        print('start success')
+#        print('start success')

@@ -19,32 +19,37 @@ numFrame = 0
 def receiveNewFrame( inMarkerModelName, inMarkerset, markerCount, frameNumber, markerSetCount, unlabeledMarkersCount, rigidBodyCount, skeletonCount,
                     labeledMarkerCount, latency, timecode, timecodeSub, timestamp, isRecording, trackedModelsChanged ):
     pass
+
 def receiveRigidBodyFrame( id, position, rotation ):
     pass
 
-def unlabeledMarkerFrame(u_unlabeled):
-#    global countFrame
-#    countFrame = countFrame - 1
-#
-#    if countFrame == 0:
-#        countFrame = 120
-    
-    countFrame()
+def unlabeledMarkerFrame(u_unlabeled):    
     pos_roate = compute_Pos_Angle(u_unlabeled)
-    print(pos_roate) 
+    
+    if configParser.get('positionConfig', 'printFramesCount') == "True":
+        countFrame()
+    
+    if configParser.get('positionConfig', 'printObejctsCount') == "True":
+        print("Obejcts count", len(pos_roate), end="\r") 
         
-#    if pos_roate is not -1:      
-#        sendSocket(pos_roate)
-##        pass
-#    else:
-#        print("There's no pair\n")
+    if configParser.get('positionConfig', 'printData') == "True":
+        print(pos_roate)
+        
+    if configParser.get('positionConfig', 'sendSocket') == "True":
+        if pos_roate is not -1:      
+            sendSocket(pos_roate)
+    #        pass
+        else:
+            print("There's no pair\n")
 
 def countFrame():
-    global numFrame 
+    global numFrame
+    global starttime 
+    if numFrame == 0:
+        starttime = time.time()
     numFrame = numFrame + 1
-    if int(5.0 - ((time.time() - starttime) % 5.0)) == 0:
-        if numFrame!=1:
-            print(numFrame/5) 
+    if time.time() - starttime > 1:
+        print("Frame Rate:", numFrame, end = '\r')
         numFrame = 0;
     
 def NNeighbor(mat):
@@ -167,8 +172,6 @@ streamingClient.rigidBodyListener = receiveRigidBodyFrame
 streamingClient.unlabeledMarkerListener = unlabeledMarkerFrame
 # Start up the streaming client now that the callbacks are set up.
 # This will run perpetually, and operate on a separate thread.
-# 
-print("before running")
 
 streamingClient.run()
 #ani = animation.FuncAnimation(fig, update, interval=100)
