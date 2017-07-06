@@ -7,3 +7,13 @@ Tracking multiple objects with 2 reflective balls for each, computing positions 
 You can change IP addresses or ports in `config.ini`. 
 
 You can comment 31-35 lines in `client.py` to open the debug mode, which will print all the information without sending to socket. 
+
+Turn on/off functions in` config.ini`, set 'False' or 'True' to turn on/off functions, **only one of these three could be turned on** 
+
+- print all the positions and orientations: `printData = True`
+
+- print how many objects captured: `printObejctsCount = True`
+
+- Print the frame rate: `printFramesCount = True` 
+
+Send socket: `sendSocket = True`
