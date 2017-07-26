@@ -202,7 +202,9 @@ class NatNetClient:
             offset += 12
             # change to x, z, y 
             u_unlabeled.append([pos[2], pos[0], pos[1]])
-            trace( "\tUnlabled Marker", i, ":", u_unlabeled[i][0],",", u_unlabeled[i][1],",", u_unlabeled[i][2] )
+            # change to x, z
+#            u_unlabeled.append([pos[2], pos[0]])
+#            trace( "\tUnlabled Marker", i, ":", u_unlabeled[i][0],",", u_unlabeled[i][1],",", u_unlabeled[i][2] )
         if self.unlabeledMarkerListener is not None:
           self.unlabeledMarkerListener(u_unlabeled)
 
