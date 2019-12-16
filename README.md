@@ -1,4 +1,4 @@
-# Optitrack-Tracking multiple objects
+# Real-time multi-object tracking with 1 or 2 markers in OptiTrack system
 Tracking multiple objects with 2 reflective markers or even only 1 for each, computing positions and orientations. This program is for resolving the limitation of amount of rigid-body. 
 
 ### Tracking with two markers. 
